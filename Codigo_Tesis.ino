@@ -50,11 +50,18 @@ void loop()             // Se ejecuta una y otra vez
       }
   Serial.println(F("OK"));
   if(GPS.speed > 30){ //mayor a 55,56km/h
-  delay(103000);   //actualizaciones cada 2 min
+  delay(100000);   //actualizaciones cada 2 min
   }else{
-    delay(23200); //cada 40,2 segundos
+    delay(20200); //cada 40,2 segundos
     }
 }
+void pruebaPalabraNMEA(){
+  
+int i=0;
+for(i=0;i<5;i++){
+    readGPS();
+  }  
+  }
 void gps_fix() {
   digitalWrite(GPSLedPin, LOW);                   // Apaga el Led GPS cuando realiza un Fix(mejora de las coordenadas)
   Serial.println(F("Getting GPS Fix"));              // Se imprime por pantalla "Getting GPS Fix"
@@ -124,14 +131,15 @@ void gpsSetup()
   digitalWrite(sel, HIGH);                        //Se enciende el modo GPS   
 //  Serial.print(F("Selector: "));                     //Se muestra el estado del selector
 //  selector();
-
-  GPS.sendCommand(PMTK_SET_BAUD_9600);              
+delay(2000);
+  GPS.sendCommand(PMTK_SET_BAUD_9600);  
   GPS.sendCommand(PGCMD_NOANTENNA);              // Se apaga la antena de actualizacion GPS(Antena eterna que no se posee)
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_OFF);
+  GPS.sendCommand("PMTK330,206*2E");
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);   // Se le dice al modulo GPS que queremos solo las oraciones NMEA $GPRMC y $GPGGA 
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_100_MILLIHERTZ);     // la tasa de actualizacion se configura a 10 Hz
   GPS.sendCommand(PMTK_API_SET_FIX_CTL_100_MILLIHERTZ);
-  
+
+
 
   Serial.println(F("GPS set"));
 }
@@ -139,10 +147,11 @@ void gpsParse()
 {   
   Serial.println(F("Initializing parse"));           // Se notifica por pantalla el procedimiento
   digitalWrite(sel, HIGH);                        // Se coloca 'sel' en HIGH (operacion GPS)
+  delay(1000);
 
-
-  readGPS();                                      // Esta funcion que se define lee las dos oraciones NMEA tomadas del modulo GPS
-  readGPS();                                                                          
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  //readGPS();                                      // Esta funcion que se define lee las dos oraciones NMEA tomadas del modulo GPS
+  pruebaPalabraNMEA();                                                                         
   
   if(GPS.hour >= 0 && GPS.hour < 4){              // A continuacion, se utilizand las variables globales antes definidas para adecuar la hora a Venezuela.
                                 dia = GPS.day - 1;    // en este rango de 4 horas la hora esta adelantada en 1 dia
@@ -253,6 +262,7 @@ void gprsSetup()
 {
   Serial.println(F("Initializing GPRS module"));
   digitalWrite(sel, LOW);                           // Se coloca 'sel' en LOW (operacion GPRS)
+  delay(1000);
   Serial1.flush();
   Serial.flush();
   
